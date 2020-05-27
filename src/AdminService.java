@@ -18,7 +18,7 @@ public class AdminService {
     public void addSubject(String subject) {
         System.out.println("sending subject to add: " + subject);
         try {
-            byte[] message = new String("addSubject;"+subject+"\n").getBytes();
+            byte[] message = new String("addSubject;"+subject+";\n").getBytes();
             ByteBuffer byteBuffer = ByteBuffer.wrap(message);
             adminSocketChannel.write(byteBuffer);
             byteBuffer.clear();
@@ -31,7 +31,7 @@ public class AdminService {
     public void deleteSubject(String subject) {
         System.out.println("sending subject to delete: " + subject);
         try {
-            byte[] message = new String("deleteSubject;"+subject+"\n").getBytes();
+            byte[] message = new String("deleteSubject;"+subject+";\n").getBytes();
             ByteBuffer byteBuffer = ByteBuffer.wrap(message);
             adminSocketChannel.write(byteBuffer);
             byteBuffer.clear();
@@ -44,7 +44,7 @@ public class AdminService {
     public void sendNews(String subject, String news){
         System.out.println(subject);
         try {
-            byte[] message = new String("postNews;"+subject+";" + news +"\n").getBytes();
+            byte[] message = new String("postNews;"+subject+";" + news +";\n").getBytes();
             ByteBuffer byteBuffer = ByteBuffer.wrap(message);
             adminSocketChannel.write(byteBuffer);
             byteBuffer.clear();

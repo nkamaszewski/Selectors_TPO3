@@ -33,7 +33,7 @@ public class Admin extends Application {
         });
 
         deleteSubjectButton.setOnAction(actionEvent -> {
-
+            adminService.deleteSubject(subjectField.getText());
         });
 
         sendNewsButton.setOnAction(actionEvent -> {

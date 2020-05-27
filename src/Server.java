@@ -108,7 +108,22 @@ public class Server {
             }
             ///////////////////////////////////// delete subject
             else if(requestMethod.equals("deleteSubject")) {
+                System.out.println("deleting subject");
                 if(subscribersMap.containsKey(requestPayload)){
+
+//                    List<SocketChannel> list = subscribersMap.get(requestPayload);
+//
+//                    for(SocketChannel sc : list){
+//                        try {
+//                            byte[] message = new String(requestPayload + "; has been deleted by Admin\n").getBytes();
+//                            ByteBuffer bb = ByteBuffer.wrap(message);
+//                            sc.write(bb);
+//                            bb.clear();
+//                        } catch (Exception e){
+//                            System.out.println("Exception in posting news");
+//                        }
+//                    }
+
                     subscribersMap.remove(requestPayload);
                 }
             }
@@ -138,7 +153,7 @@ public class Server {
                     for (String s : subscribersMap.keySet()){
                         List<SocketChannel> list = subscribersMap.get(s);
                         if(list.indexOf(clientSocketChannel) != -1){
-                            subjects += s;
+                            subjects += s+";";
                         }
                     }
 
