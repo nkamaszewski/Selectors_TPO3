@@ -20,7 +20,7 @@ public class ClientService {
 
     public String getSubjects() {
         try {
-            byte[] message = new String("getSubjects;empty\n").getBytes();
+            byte[] message = new String("getSubjects;empty;\n").getBytes();
             ByteBuffer byteBuffer = ByteBuffer.wrap(message);
             clientSocketChannel.write(byteBuffer);
             byteBuffer.clear();
@@ -43,5 +43,41 @@ public class ClientService {
             e.printStackTrace();
             return "error";
         }
+    }
+
+    public void subscribe(String subject){
+        try {
+        byte[] message = new String("addSubscriber;" + subject + ";\n").getBytes();
+        ByteBuffer byteBuffer = ByteBuffer.wrap(message);
+        clientSocketChannel.write(byteBuffer);
+        byteBuffer.clear();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+
+        }
+    }
+
+    public void unsubscribe(String subject){
+        try {
+            byte[] message = new String("deleteSubscriber;" + subject + ";\n").getBytes();
+            ByteBuffer byteBuffer = ByteBuffer.wrap(message);
+            clientSocketChannel.write(byteBuffer);
+            byteBuffer.clear();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+
+        }
+    }
+
+    public String getNews(){
+        StringBuffer responseBuffer = MyUtils.readResponse(clientSocketChannel);
+
+        String[] response = Pattern.compile(";").split(responseBuffer);
+
+        String result = "Subject: " + response[0] + ", " + response[1];
+
+        return result;
     }
 }

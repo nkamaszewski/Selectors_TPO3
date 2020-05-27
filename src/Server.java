@@ -96,20 +96,21 @@ public class Server {
 
         try {
 
-            String[] request = Pattern.compile(";", 2).split(requestBuffer);
+            String[] request = Pattern.compile(";").split(requestBuffer);
 
             String requestMethod = request[0];
             String requestPayload = request[1];
 
             System.out.println("req method: "+ requestMethod + "  payload: " + requestPayload);
-
+            //////////////////////////////////// add subject
             if(requestMethod.equals("addSubject")){
-                // TO DO:
                 System.out.println(requestPayload);
                 if(!subscribersMap.containsKey(requestPayload)){
                     subscribersMap.put(requestPayload, new ArrayList<>());
                 }
-            } else if(requestMethod.equals("getSubjects")){
+            }
+            ///////////////////////////////////// get subjects
+            else if(requestMethod.equals("getSubjects")){
                 try {
                     String subjects = new String();
 
@@ -124,6 +125,44 @@ public class Server {
 
                 } catch (IOException e) {
                     e.printStackTrace();
+                }
+            }
+            /////////////////////////////////// add subsciber
+            else if(requestMethod.equals("addSubscriber")){
+                System.out.println(subscribersMap.get("kot"));
+                if(subscribersMap.containsKey(requestPayload)){
+                    List<SocketChannel> list = subscribersMap.get(requestPayload);
+                    System.out.println("adding subscriber");
+                    if(list.indexOf(clientSocketChannel) == -1){
+                        list.add(clientSocketChannel);
+                        System.out.println("subscriber added");
+                    };
+                }
+            }
+            /////////////////////////////////// delete subscriber
+            else if(requestMethod.equals("deleteSubscriber")){
+                if(subscribersMap.containsKey(requestPayload)){
+                    List<SocketChannel> list = subscribersMap.get(requestPayload);
+                    if(list.indexOf(clientSocketChannel) == -1){
+                        list.remove(clientSocketChannel);
+                    };
+                }
+            }
+            ///////////////////////////////// sending news to subscribers
+            else if(requestMethod.equals("postNews")){
+                if(subscribersMap.containsKey(requestPayload)){
+                    List<SocketChannel> list = subscribersMap.get(requestPayload);
+                    System.out.println("posting news... subscribers: " + list.size());
+                    for(SocketChannel sc : list){
+                        try {
+                            byte[] message = new String(requestPayload + ";NEWS: " + request[2] + "\n").getBytes();
+                            ByteBuffer bb = ByteBuffer.wrap(message);
+                            sc.write(bb);
+                            bb.clear();
+                        } catch (Exception e){
+                            System.out.println("Exception in posting news");
+                        }
+                    }
                 }
             }
 

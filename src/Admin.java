@@ -36,6 +36,9 @@ public class Admin extends Application {
 
         });
 
+        sendNewsButton.setOnAction(actionEvent -> {
+            adminService.sendNews(newsSubjectField.getText(), newsField.getText());
+        });
 
         GridPane gridPane = new GridPane();
 
