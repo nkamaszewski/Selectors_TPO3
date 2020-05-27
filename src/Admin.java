@@ -15,6 +15,9 @@ public class Admin extends Application {
     private static String server = "localhost";
     private static int port = 48888;
 
+    AdminService adminService = new AdminService();
+
+    @Override
     public void start(Stage primaryStage) throws Exception{
 
         Button addSubjectButton = new Button("Add Subject");
@@ -26,7 +29,7 @@ public class Admin extends Application {
         TextField newsField = new TextField();
 
         addSubjectButton.setOnAction(actionEvent -> {
-
+            adminService.addSubject(subjectField.getText());
         });
 
         deleteSubjectButton.setOnAction(actionEvent -> {
@@ -35,11 +38,6 @@ public class Admin extends Application {
 
 
         GridPane gridPane = new GridPane();
-
-        gridPane.setHgap(50);
-        gridPane.setVgap(10);
-
-        Scene scene = new Scene(gridPane, 800, 600);
 
         gridPane.add(new Label("Subject: "), 1, 1, 1, 1);
         gridPane.add(subjectField, 1, 2, 1, 1);
@@ -53,6 +51,10 @@ public class Admin extends Application {
         gridPane.add(newsField, 1, 7, 5, 1);
         gridPane.add(sendNewsButton, 1, 8, 1, 1);
 
+        gridPane.setHgap(50);
+        gridPane.setVgap(10);
+
+        Scene scene = new Scene(gridPane, 800, 600);
         primaryStage.setTitle("s16456 - Norbert Kamaszewski, admin java program");
         primaryStage.setResizable(true);
         primaryStage.setScene(scene);

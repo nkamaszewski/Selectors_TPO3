@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -10,16 +11,15 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 public class Server {
-    public Server(){ }
+    ServerSocketChannel serverSocketChannel = null;
+    Selector selector = null;
+    String serverHost = "localhost";
+    int serverPort = 50000;
 
-    public static void main(String[] args) {
-        ServerSocketChannel serverSocketChannel = null;
-        Selector selector = null;
-        String serverHost = "localhost";
-        int serverPort = 50000;
+    Map<String, List<SocketChannel>> subscribersMap = new TreeMap<String, List<SocketChannel>>();
 
-        Map<String, List<SocketChannel>> subscribersMap = new TreeMap<String, List<SocketChannel>>();
 
+    public Server(){
 
         try{
             serverSocketChannel = ServerSocketChannel.open();
@@ -68,6 +68,7 @@ public class Server {
 
                     if(selectionKey.isReadable()){
                         SocketChannel clientSocketChannel = (SocketChannel) selectionKey.channel();
+                        System.out.println("client connected to server");
                         serviceRequest(clientSocketChannel);
                         continue;
                     }
@@ -86,36 +87,44 @@ public class Server {
     // service single request
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static void serviceRequest(SocketChannel clientSocketChannel){
+    public void serviceRequest(SocketChannel clientSocketChannel){
         if(!clientSocketChannel.isOpen()) {
             return;
         }
 
-        StringBuffer requestBuffer = new StringBuffer();
-        ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+        StringBuffer requestBuffer = MyUtils.readResponse(clientSocketChannel);
 
         try {
-            readLoop:
-            while (true){
-                int i = clientSocketChannel.read(byteBuffer);
-                if(i > 0){
-                    byteBuffer.flip();
-                    CharBuffer charBuffer = Charset.forName("UTF-8").decode(byteBuffer);
-
-                    while (charBuffer.hasRemaining()){
-                        char c = charBuffer.get();
-                        if(c == '\r' || c == '\n'){
-                            break readLoop;
-                        }
-                       requestBuffer.append(c);
-                    }
-                }
-            }
 
             String[] request = Pattern.compile(";", 2).split(requestBuffer);
 
-            if(request[0] == "dodaj"){
+            String requestMethod = request[0];
+            String requestPayload = request[1];
+
+            System.out.println("req method: "+ requestMethod + "  payload: " + requestPayload);
+
+            if(requestMethod.equals("addSubject")){
                 // TO DO:
+                System.out.println(requestPayload);
+                if(!subscribersMap.containsKey(requestPayload)){
+                    subscribersMap.put(requestPayload, new ArrayList<>());
+                }
+            } else if(requestMethod.equals("getSubjects")){
+                try {
+                    String subjects = new String();
+
+                    for (String s : subscribersMap.keySet()){
+                        subjects += s+";";
+                    }
+
+                    byte[] message = new String(subjects+"\n").getBytes();
+                    ByteBuffer bb = ByteBuffer.wrap(message);
+                    clientSocketChannel.write(bb);
+                    bb.clear();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
         } catch (Exception e){
@@ -124,6 +133,11 @@ public class Server {
                 clientSocketChannel.socket().close();
             } catch (Exception exception) {}
         }
+
+    }
+
+    public static void main(String[] args) {
+        Server server = new Server();
 
     }
 
