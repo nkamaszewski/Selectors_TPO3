@@ -1,12 +1,10 @@
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.Charset;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -104,9 +102,14 @@ public class Server {
             System.out.println("req method: "+ requestMethod + "  payload: " + requestPayload);
             //////////////////////////////////// add subject
             if(requestMethod.equals("addSubject")){
-                System.out.println(requestPayload);
                 if(!subscribersMap.containsKey(requestPayload)){
                     subscribersMap.put(requestPayload, new ArrayList<>());
+                }
+            }
+            ///////////////////////////////////// delete subject
+            else if(requestMethod.equals("deleteSubject")) {
+                if(subscribersMap.containsKey(requestPayload)){
+                    subscribersMap.remove(requestPayload);
                 }
             }
             ///////////////////////////////////// get subjects
@@ -127,12 +130,31 @@ public class Server {
                     e.printStackTrace();
                 }
             }
-            /////////////////////////////////// add subsciber
+            /////////////////////////////////// get subscriptions
+            else if(requestMethod.equals("getSubscriptions")){
+                try {
+                    String subjects = new String();
+
+                    for (String s : subscribersMap.keySet()){
+                        List<SocketChannel> list = subscribersMap.get(s);
+                        if(list.indexOf(clientSocketChannel) != -1){
+                            subjects += s;
+                        }
+                    }
+
+                    byte[] message = new String(subjects+"\n").getBytes();
+                    ByteBuffer bb = ByteBuffer.wrap(message);
+                    clientSocketChannel.write(bb);
+                    bb.clear();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            /////////////////////////////////// add subscriber
             else if(requestMethod.equals("addSubscriber")){
-                System.out.println(subscribersMap.get("kot"));
                 if(subscribersMap.containsKey(requestPayload)){
                     List<SocketChannel> list = subscribersMap.get(requestPayload);
-                    System.out.println("adding subscriber");
                     if(list.indexOf(clientSocketChannel) == -1){
                         list.add(clientSocketChannel);
                         System.out.println("subscriber added");
@@ -143,7 +165,7 @@ public class Server {
             else if(requestMethod.equals("deleteSubscriber")){
                 if(subscribersMap.containsKey(requestPayload)){
                     List<SocketChannel> list = subscribersMap.get(requestPayload);
-                    if(list.indexOf(clientSocketChannel) == -1){
+                    if(list.indexOf(clientSocketChannel) != -1){
                         list.remove(clientSocketChannel);
                     };
                 }
